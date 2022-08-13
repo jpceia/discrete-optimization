@@ -26,27 +26,28 @@ def solve_greedy(values, weights, capacity):
 
 def solve_dynamic(values, weights, capacity):
     N = len(values)
-    O = np.zeros((capacity, N), dtype=np.int32)
-    arr = np.zeros((capacity, N, N), dtype=np.bool_)
+    O_prev = np.zeros(capacity, dtype=np.int32)
+    arr_prev = np.zeros((capacity, N), dtype=np.bool_)
+    densities = values / weights
     
     for i in range(N):
         v = values[i]
         w = weights[i]
+        arr = arr_prev.copy()
+        O = O_prev.copy()
         for k_index in range(capacity):
             k = k_index + 1
-            if weights[i] > k:
-                O[k_index, i] = O[k_index, i-1]
-                arr[k_index, i, :] = arr[k_index, i-1, :]
-                continue
-            if O[k_index, i-1] > v + O[k_index-w, i-1]:
-                O[k_index, i] = O[k_index, i-1]
-                arr[k_index, i, :] = arr[k_index, i-1, :]
-            else:
-                O[k_index, i] = v + O[k_index-w, i-1]
-                arr[k_index, i, :] = arr[k_index-w, i-1, :]
-                arr[k_index, i, i] = True
+            #v / w <= O_prev[k_index] / k or
+            if weights[i] > k or O_prev[k_index] > v + O_prev[k_index-w]:
+                continue # do not add the items
+            # add the items
+            O[k_index] = v + O_prev[k_index-w]
+            arr[k_index] = arr_prev[k_index-w]
+            arr[k_index, i] = True
+        O_prev = O
+        arr_prev = arr
     
-    taken = arr[-1, -1, :]
+    taken = arr[-1, :]
     return (taken * 1).tolist(), (taken * values).sum(), (taken * weights).sum()
     
     
@@ -71,7 +72,7 @@ def solve_it(input_data):
     
     values = np.asarray(values)
     weights = np.asarray(weights)
-    if len(values) <= 200:
+    if len(values) <= 1000:
         taken, value, weight = solve_dynamic(values, weights, capacity)
         is_optimal = '1'
     else:
