@@ -97,10 +97,37 @@ def find_by_exclusion(game):
       tmp = np.unique(tmp)
       if tmp.size == 8:
         # find missing
-        for k in range(1, 10):
-          if k not in tmp:
-            print(f'Found {k} to ({i + 1}, {j + 1}) index - by exclusion')
-            return k, i, j
+        for target in range(1, 10):
+          if target not in tmp:
+            print(f'Found {target} to ({i + 1}, {j + 1}) index - by exclusion')
+            return target, i, j
+      elif tmp.size < 8: # multiple possibilities
+        possible = [i for i in range(1, 10) if i not in tmp]
+        for target in possible:
+          mat = np.ones_like(game, dtype=np.bool_)
+          mat[game > 0] = False
+          for i_, j_ in zip(*np.where(game == target)):
+            mat[i_, :] = False
+            mat[:, j_] = False
+            mat[masks[(i_ // 3) * 3 + j_ // 3]] = False
+          
+          for mask in masks:
+            rows = (mat * mask).any(1)
+            if rows.sum() == 1: # only a row
+              mat[rows[:, None] * ~mask] = False # apply only outside the mask
+            cols = (mat * mask).any(0)
+            if cols.sum() == 1: # only a column
+              mat[cols[None, :] * ~mask] = False
+
+          if mat[i, j] == False:
+            possible.remove(target)
+            if i == 8:
+              print(possible)
+            if len(possible) == 1:
+              value = possible[1]
+              print(f'Found {value} to ({i + 1}, {j + 1}) index - by exclusion')
+              return value, i, j
+
 
 solutions = 0
 for _ in range(20):

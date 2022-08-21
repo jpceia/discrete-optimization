@@ -28,7 +28,6 @@ def solve_dynamic(values, weights, capacity):
     N = len(values)
     O_prev = np.zeros(capacity, dtype=np.int32)
     arr_prev = np.zeros((capacity, N), dtype=np.bool_)
-    densities = values / weights
     
     for i in range(N):
         v = values[i]
@@ -49,7 +48,27 @@ def solve_dynamic(values, weights, capacity):
     
     taken = arr[-1, :]
     return (taken * 1).tolist(), (taken * values).sum(), (taken * weights).sum()
+
+def solve_branch_and_bound(values, weights, capacity, optimistic_value=None):
+    if optimistic_value is None:
+        optimistic_value = np.sum(values)
+        
+    if len(values) == 1:
+        if weights[0] > capacity:
+            return np.zeros(1), 0, 0
+        else:
+            return np.ones(1), values[0], weights[0]
     
+    # added current item
+    taken1, value1, weight1 = solve_branch_and_bound(values[1:], weights[1:], capacity - weights[0], optimistic_value)
+    
+    # didn't add current item
+    taken2, value2, weight2 = solve_branch_and_bound(values[1:], weights[1:], capacity, optimistic_value-values[0])
+    
+    if value1 > value2:
+        return np.concatenate([taken1, np.ones(1)]), value1 + values[0], weight1 + weights[0]
+    # else
+    return np.concatenate([taken2, np.zeros(0)]), value2, weight2
     
 def solve_it(input_data):
     # Modify this code to run your optimization algorithm
@@ -73,7 +92,7 @@ def solve_it(input_data):
     values = np.asarray(values)
     weights = np.asarray(weights)
     if len(values) <= 1000:
-        taken, value, weight = solve_dynamic(values, weights, capacity)
+        taken, value, weight = solve_branch_and_bound(values, weights, capacity)
         is_optimal = '1'
     else:
         taken, value, weight = solve_greedy(values, weights, capacity)
