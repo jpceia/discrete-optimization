@@ -49,26 +49,39 @@ def solve_dynamic(values, weights, capacity):
     taken = arr[-1, :]
     return (taken * 1).tolist(), (taken * values).sum(), (taken * weights).sum()
 
-def solve_branch_and_bound(values, weights, capacity, optimistic_value=None):
-    if optimistic_value is None:
-        optimistic_value = np.sum(values)
-        
+def solve_branch_and_bound(values, weights, value, room, estimate=None):
+    if optimistic_estimate is None:
+        # calculating new optimistic estimate
+        optimistic_estimate = value
+        current_room = room
+        for k, (v, w) in enumerate(zip(values, weights)):
+            if w <= current_room:
+                optimistic_estimate += v
+                current_room -= w
+            else:
+                optimistic_estimate += v * current_room / w
+                current_room = 0
+                break
+    
+    v, w = values[0], weights[0]    
     if len(values) == 1:
-        if weights[0] > capacity:
-            return np.zeros(1), 0, 0
-        else:
-            return np.ones(1), values[0], weights[0]
+        if w <= capacity:
+            return [1], v, w
+        # else:
+        return [0], 0, 0
+    # else:
     
-    # added current item
-    taken1, value1, weight1 = solve_branch_and_bound(values[1:], weights[1:], capacity - weights[0], optimistic_value)
+    value_left = 0
+    value_right = 0
+    if capacity >= w and optimistic_estimate > value + v:
+        x_left, value_left = solve_branch_and_bound(values[1:], weights[1:], value + v, capacity - w, optimistic_estimate)
+    if value_left < optimistic_estimate:
+        x_right, value_right = solve_branch_and_bound(values[1:], weights[1:], value, capacity, optimistic_estimate)
     
-    # didn't add current item
-    taken2, value2, weight2 = solve_branch_and_bound(values[1:], weights[1:], capacity, optimistic_value-values[0])
-    
-    if value1 > value2:
-        return np.concatenate([taken1, np.ones(1)]), value1 + values[0], weight1 + weights[0]
+    if value_left > value_right:
+        return [1] + x_left, value_left
     # else
-    return np.concatenate([taken2, np.zeros(0)]), value2, weight2
+    return [0] + x_right, value_right
     
 def solve_it(input_data):
     # Modify this code to run your optimization algorithm
@@ -96,7 +109,7 @@ def solve_it(input_data):
         is_optimal = '1'
     else:
         taken, value, weight = solve_greedy(values, weights, capacity)
-        is_optimal = '1' if weight == capacity else '0'
+        is_optimal = '0'
     # prepare the solution in the specified output format
 
     output_data = str(value) + ' ' + is_optimal + '\n'
