@@ -30,16 +30,21 @@ game = [
 ]
 
 def print_board(game):
+  # Iterate over each row in the game
   for i, line in enumerate(game):
     s = ""
+    # Iterate over each number in the row
     for j, n in enumerate(line, 1):
       s += str(n) if n > 0 else " "
       s += " "
+      # Add a vertical line every 3 numbers
       if j in [3, 6]:
         s += "| "
+    # Add a horizontal line every 3 rows
     if i in [3, 6]:
       print("-" * 11 * 2)
     print(s)
+  print()
 
 
 game = np.array(game)
