@@ -134,7 +134,7 @@ def find_by_exclusion(game):
             if i == 8:
               print(possible)
             if len(possible) == 1:
-              value = possible[1]
+              value = possible[0]
               print(f'Found {value} to ({i + 1}, {j + 1}) index - by exclusion')
               return value, i, j
 
