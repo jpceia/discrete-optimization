@@ -90,10 +90,15 @@ def find_move(game, target):
   # print("No closed solution found")
   
 def find_by_exclusion(game):
+  
+  # Iterate over each cell in the game
   for i in range(9):
     for j in range(9):
+      # If the cell is not empty, then we can skip it
       if game[i, j] > 0:
         continue
+
+      # Get the row, column, and square of the cell
       row = game[i, :]
       column = game[:, j]
       sq = game[masks[(i // 3) * 3 + j // 3]]
