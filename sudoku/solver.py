@@ -139,27 +139,30 @@ def find_by_exclusion(game):
               return value, i, j
 
 
-solutions = 0
 for _ in range(20):
 
-  for target in range(1, 10):
-    while True:  
-      result = find_move(game, target)
-      if result is None:
-        break
-      solutions += 1
-      i, j = result
-      game[i, j] = target
-      print_board(game)
+  continue_loop = True
+  while continue_loop:
+    continue_loop = False
+    for target in range(1, 10):
+      while True:  
+        result = find_move(game, target)
+        if result is None:
+          break
+        continue_loop = True
+        i, j = result
+        game[i, j] = target
+        print_board(game)
 
-  while True:
-    result = find_by_exclusion(game)
-    if result is None:
-      break
-    target, i, j = result
-    game[i, j] = target
-    print_board(game)
+  # Find by exclusion
+  result = find_by_exclusion(game)
+  if result is None:
+    break
+  target, i, j = result
+  game[i, j] = target
+  print_board(game)
 
+print("Final solution:")
 print_board(game)
 
 
