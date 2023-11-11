@@ -149,7 +149,8 @@ for _ in range(20):
         break
       solutions += 1
       i, j = result
-      game[i, j] = target   
+      game[i, j] = target
+      print_board(game)
 
   while True:
     result = find_by_exclusion(game)
@@ -157,8 +158,8 @@ for _ in range(20):
       break
     target, i, j = result
     game[i, j] = target
+    print_board(game)
 
-print(f'Found {solutions} solutions')
 print_board(game)
 
 
